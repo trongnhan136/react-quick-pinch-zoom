@@ -657,9 +657,11 @@ class PinchZoom extends React.Component<Props> {
   }
 
   private _onResize = () => {
-    this._updateInitialZoomFactor();
+    setTimeout(() => {
+      this._updateInitialZoomFactor();
     this._setupOffsets();
     this._update();
+    }, 1000);
   };
 
   private _bindEvents() {
