@@ -1,10 +1,10 @@
-import React, { Component, createRef, forwardRef } from "react";
+import React, { Component, createRef, forwardRef } from 'react';
 
 import QuickPinchZoom, {
   make2dTransformValue,
   make3dTransformValue,
-  hasTranslate3DSupport
-} from "react-quick-pinch-zoom";
+  hasTranslate3DSupport,
+} from 'react-quick-pinch-zoom';
 
 const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
@@ -23,7 +23,7 @@ class Base extends Component {
     if (div) {
       const value = makeTransformValue({ x, y, scale });
 
-      div.style.setProperty("transform", value);
+      div.style.setProperty('transform', value);
     }
   };
 
@@ -32,10 +32,10 @@ class Base extends Component {
 
     if (div) {
       requestAnimationFrame(() => {
-        div.style.setProperty("will-change", "auto");
+        div.style.setProperty('will-change', 'auto');
 
         requestAnimationFrame(() => {
-          div.style.setProperty("will-change", "transform");
+          div.style.setProperty('will-change', 'transform');
         });
       });
     }

@@ -6,6 +6,13 @@ import { isTouch } from '../utils';
 import { AnimateOptions, ScaleToOptions, Props, DefaultProps } from './types';
 import { getOffsetBounds } from './getOffsetBounds';
 
+declare global {
+  // eslint-disable-next-line no-unused-vars
+  interface Window {
+    ResizeObserver: typeof ResizeObserver;
+  }
+}
+
 const classnames = (base: string, other?: string): string =>
   other ? `${base} ${other}` : base;
 
@@ -134,8 +141,8 @@ class PinchZoom extends Component<Props> {
     zoomOutFactor: 1.3,
     doubleTapZoomOutOnMaxScale: false,
     doubleTapToggleZoom: false,
-    // @ts-expect-error
-    _document: isSsr ? null : window.document,
+    externalWindow: window,
+    containerProps: undefined,
   };
 
   private _velocity: Point | null;
@@ -630,9 +637,10 @@ class PinchZoom extends Component<Props> {
   }
 
   private _getOffsetTouches(event: TouchEvent): Array<Point> {
-    const { _document } = this.props;
-    const _html = _document.documentElement;
-    const _body = _document.body;
+    const { externalWindow } = this.props;
+
+    const _html = externalWindow.document.documentElement;
+    const _body = externalWindow.document.body;
     const { top, left } = this._getContainerRect();
     const scrollTop = _html.scrollTop || _body.scrollTop;
     const scrollLeft = _html.scrollLeft || _body.scrollLeft;
@@ -646,6 +654,7 @@ class PinchZoom extends Component<Props> {
   }
 
   private _animate(frameFn: (a: number) => void, options?: AnimateOptions) {
+    const { externalWindow } = this.props;
     const startTime = new Date().getTime();
     const { timeFn, callback, duration } = {
       timeFn: swing,
@@ -670,12 +679,12 @@ class PinchZoom extends Component<Props> {
         progress = timeFn(progress);
         frameFn(progress);
         this._update({ isAnimation: true });
-        requestAnimationFrame(renderFrame);
+        externalWindow.requestAnimationFrame(renderFrame);
       }
     };
     this._inAnimation = true;
 
-    requestAnimationFrame(renderFrame);
+    externalWindow.requestAnimationFrame(renderFrame);
   }
 
   private _stopAnimation() {
@@ -719,9 +728,12 @@ class PinchZoom extends Component<Props> {
 
   private _bindEvents() {
     const { current: div } = this._containerRef;
+    const { externalWindow } = this.props;
 
-    if (window.ResizeObserver) {
-      this._containerObserver = new ResizeObserver(this._onResize);
+    if (externalWindow.ResizeObserver) {
+      this._containerObserver = new externalWindow.ResizeObserver(
+        this._onResize,
+      );
       this._containerObserver.observe(div);
     } else {
       window.addEventListener('resize', this._onResize);
@@ -756,6 +768,7 @@ class PinchZoom extends Component<Props> {
   }
 
   private _update(options?: { isAnimation: boolean }) {
+    const { externalWindow } = this.props;
     if (this._updatePlaned) {
       return;
     }
@@ -774,7 +787,7 @@ class PinchZoom extends Component<Props> {
 
     this._updatePlaned = true;
 
-    requestAnimationFrame(() => {
+    externalWindow.requestAnimationFrame(() => {
       this._updatePlaned = false;
 
       updateFrame();
@@ -1023,12 +1036,12 @@ class PinchZoom extends Component<Props> {
           [
             'mousemove',
             this.simulate(this._handlerOnTouchMove),
-            this.props._document,
+            this.props.externalWindow.document,
           ],
           [
             'mouseup',
             this.simulate(this._handlerOnTouchEnd),
-            this.props._document,
+            this.props.externalWindow.document,
           ],
           ['mousedown', this.simulate(this._handlerOnTouchStart)],
           ['click', this._handleClick],
@@ -1099,7 +1112,7 @@ if (process.env.NODE_ENV !== 'production') {
     doubleTapZoomOutOnMaxScale: bool,
     doubleTapToggleZoom: bool,
     isTouch: func,
-    _document: any,
+    externalWindow: any,
   };
 }
 

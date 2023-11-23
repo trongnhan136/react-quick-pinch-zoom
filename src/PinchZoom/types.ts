@@ -30,7 +30,7 @@ export interface OffsetBoundsOptions {
 export interface DefaultProps {
   shouldInterceptWheel: (e: WheelEvent) => boolean;
   shouldCancelHandledTouchEndEvents: boolean;
-  containerProps: HTMLAttributes<HTMLDivElement>;
+  containerProps: HTMLAttributes<HTMLDivElement> | undefined;
   animationDuration: number;
   wheelScaleFactor: number;
   draggableUnZoomed: boolean;
@@ -58,8 +58,7 @@ export interface DefaultProps {
   doubleTapZoomOutOnMaxScale: boolean;
   doubleTapToggleZoom: boolean;
   isTouch: () => boolean;
-
-  _document: Document;
+  externalWindow: Window;
 }
 
 export interface RequiredProps {
