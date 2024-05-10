@@ -1,9 +1,10 @@
-import type { ReactElement, HTMLAttributes } from 'react';
+import type { ReactElement, HTMLAttributes, MutableRefObject } from 'react';
 
 export interface UpdateAction {
   x: number;
   y: number;
   scale: number;
+  zoomFactor: number;
 }
 
 export interface AnimateOptions {
@@ -27,10 +28,15 @@ export interface OffsetBoundsOptions {
   centerContained?: boolean;
 }
 
+export type QuickPinchZoomMethodProps = {
+  doZoom: (zoom: number, animated: boolean) => void;
+};
+
 export interface DefaultProps {
   shouldInterceptWheel: (e: WheelEvent) => boolean;
   shouldCancelHandledTouchEndEvents: boolean;
   containerProps: HTMLAttributes<HTMLDivElement> | undefined;
+  openMethodPropsRef?: MutableRefObject<QuickPinchZoomMethodProps | undefined>;
   animationDuration: number;
   wheelScaleFactor: number;
   draggableUnZoomed: boolean;

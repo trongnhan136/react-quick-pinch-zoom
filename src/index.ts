@@ -10,7 +10,11 @@ export {
   isTouch,
 } from './utils';
 
-export type { UpdateAction, ScaleToOptions } from './PinchZoom/types';
+export type {
+  UpdateAction,
+  ScaleToOptions,
+  QuickPinchZoomMethodProps,
+} from './PinchZoom/types';
 
 export interface PinchZoomProps extends RequiredProps, Partial<DefaultProps> {
   // noop

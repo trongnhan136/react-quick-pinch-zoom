@@ -142,6 +142,7 @@ class PinchZoom extends Component<Props> {
     doubleTapZoomOutOnMaxScale: false,
     doubleTapToggleZoom: false,
     externalWindow: window,
+    openMethodPropsRef: undefined,
     containerProps: undefined,
   };
 
@@ -176,6 +177,11 @@ class PinchZoom extends Component<Props> {
   private _containerRef: {
     readonly current: HTMLDivElement;
   } = createRef<HTMLDivElement>();
+
+  constructor(props: Props) {
+    super(props);
+    this.doZoom = this.doZoom.bind(this);
+  }
 
   private _handleClick = (clickEvent: Event) => {
     if (this._ignoreNextClick) {
@@ -778,7 +784,7 @@ class PinchZoom extends Component<Props> {
       const x = -this._offset.x / scale;
       const y = -this._offset.y / scale;
 
-      this.props.onUpdate({ scale, x, y });
+      this.props.onUpdate({ scale, x, y, zoomFactor: this._zoomFactor });
     };
 
     if (options?.isAnimation) {
@@ -1048,12 +1054,42 @@ class PinchZoom extends Component<Props> {
           ['wheel', this._handlerWheel],
         ];
 
+  doZoom(zoomFactor: number, animated: boolean) {
+    const startZoomFactor = this._zoomFactor;
+    const rect = this._getContainerRect();
+    let center = { x: rect.width / 2, y: rect.height / 2 };
+
+    if (!animated) {
+      this._scaleTo(startZoomFactor + zoomFactor - startZoomFactor, center);
+      this._stopAnimation();
+      return this._update();
+    }
+
+    const updateProgress = (progress: number) => {
+      this._scaleTo(
+        startZoomFactor + progress * (zoomFactor - startZoomFactor),
+        center,
+      );
+    };
+
+    this._animate(updateProgress);
+  }
+
   componentDidMount() {
+    if (this.props.openMethodPropsRef) {
+      this.props.openMethodPropsRef!.current = {
+        doZoom: this.doZoom,
+      };
+    }
+
     this._bindEvents();
     this._update();
   }
 
   componentWillUnmount() {
+    if (this.props.openMethodPropsRef) {
+      this.props.openMethodPropsRef!.current = undefined;
+    }
     this._stopAnimation();
     this._unSubscribe();
   }
